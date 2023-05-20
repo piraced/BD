@@ -5,7 +5,7 @@ from src.bot import TTRPGbot
 
 cogs_list = [
     "content_config",
-    "battle_commands"
+    "use_commands"
 ]
 
 load_dotenv()

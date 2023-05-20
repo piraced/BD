@@ -18,7 +18,7 @@ def initialize_database():
         get_database().create_collection(name='rulesets')
     if 'selected_ruleset' not in names:
         get_database().create_collection(name='selected_ruleset')
-    if 'items' not in names:
+    if 'macros' not in names:
         get_database().create_collection(name='items')
     if 'abilities' not in names:
         get_database().create_collection(name='abilities')
@@ -81,6 +81,10 @@ def replace_object(object_type, name, server_id, document):
 
 def reset_character_player(player_id, server_id):
     get_database()["characters"].find_one_and_update(filter={ "player": player_id, "server_id": server_id, "ruleset": get_selected_ruleset(server_id)["name"]}, update={ '$set' : {"player": ""}})
+
+def get_character_by_player(player_id, server_id):
+    chars = get_database()["characters"]
+    return chars.find_one({"server_id" : server_id, "ruleset" : get_selected_ruleset(server_id)["name"], "player": player_id})
 
 def does_object_exist_in_ruleset(object_type, names_in, server_id):
     names = []

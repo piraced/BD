@@ -1,4 +1,5 @@
 import discord
+import d20
 import src.ui.macro_config_modal
 import src.ui.ability_config_modal
 import src.ui.effect_config_modal
@@ -9,6 +10,7 @@ import src.ui.character_assign_img_modal
 import src.ui.map_config_modal
 import src.ui.encounter_config_modal
 import src.db_operations as db
+import src.utils
 
 
 
@@ -24,6 +26,11 @@ class Content_config_view(discord.ui.View):
         self.assign_user = assign_user
         self.add_buttons()
         self.update_view(server_id)
+
+        ### a bit hacky way to disabled the return to admin config menu button
+        ### should be fine since this is the only way of a regular user getting to this view
+        if content_type == "macros" and alt_mode == 2:
+            self.get_item("return_button").disabled = True
 
     def add_buttons(self):
 
@@ -129,10 +136,15 @@ class Content_config_view(discord.ui.View):
             if self.alt_mode != 2:
                 await interaction.response.send_modal(self.modal_selector())
             else:
-                msg = self.assign_character(self.assign_user, interaction.guild_id, str(self.label))
-                message_id = interaction.message.id
-                await interaction.response.send_message(msg, ephemeral=True)
-                await interaction.followup.delete_message(message_id)
+                match self.content_type:
+                    case 'characters':
+                        msg = self.assign_character(self.assign_user, interaction.guild_id, str(self.label))
+                        message_id = interaction.message.id
+                        await interaction.response.send_message(msg, ephemeral=True)
+                        await interaction.followup.delete_message(message_id)
+                    case 'macros':
+                        msg = self.run_macro(self.assign_user, self.server_id, str(self.label))
+                        await interaction.response.send_message(msg)
 
 
         def modal_selector(self):
@@ -167,3 +179,22 @@ class Content_config_view(discord.ui.View):
             character['player'] = user.id
             db.replace_object('characters', character_name, server_id, character)
             return "" + character_name +" is now assigned to: " + user.display_name
+
+        def run_macro(self, user, server_id, macro_name):
+            macro = db.get_object("macros", macro_name, server_id)
+            character = db.get_character_by_player(user.id, server_id)
+            stat_names = db.get_ruleset(db.get_selected_ruleset(server_id)["name"], server_id)["statistics"]
+            dictionary = {}
+
+            for stat in stat_names:
+                dictionary[stat] = character["statistics"][stat]["value"]
+
+            ### dont seem to be able to use dict type objects in f-strings
+            character_name = character["name"]
+            user_nick = user.display_name
+
+            roll = d20.roll(src.utils.add_values_to_formula_string(dictionary, macro["formula"]))
+            msg = f"{character_name}({user_nick}) used the {macro_name} macro:\n" + roll.result
+            return msg
+
+
