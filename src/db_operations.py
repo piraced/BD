@@ -79,6 +79,9 @@ def insert_object(object_type, document):
 def replace_object(object_type, name, server_id, document):
     get_database()[object_type].find_one_and_replace(filter={"name" : name, "server_id" : server_id, "ruleset" : get_selected_ruleset(server_id)["name"]}, replacement=document)
 
+def reset_character_player(player_id, server_id):
+    get_database()["characters"].find_one_and_update(filter={ "player": player_id, "server_id": server_id, "ruleset": get_selected_ruleset(server_id)["name"]}, update={ '$set' : {"player": ""}})
+
 def does_object_exist_in_ruleset(object_type, names_in, server_id):
     names = []
     names.clear()

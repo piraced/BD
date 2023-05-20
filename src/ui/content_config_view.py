@@ -162,6 +162,7 @@ class Content_config_view(discord.ui.View):
             return modal
 
         def assign_character(self, user, server_id, character_name):
+            db.reset_character_player(user.id, self.server_id)
             character = db.get_object("characters", character_name, server_id)
             character['player'] = user.id
             db.replace_object('characters', character_name, server_id, character)
