@@ -3,6 +3,7 @@ import src.db_operations as db
 import base64
 import requests
 import re
+import d20
 from bs4 import BeautifulSoup as bs4
 from openpyxl.utils.cell import get_column_letter
 
@@ -46,6 +47,26 @@ def get_image_token(url:str):
 def encode_url_base64(url:str):
     return str(base64.standard_b64encode(url.encode("utf-8")), "utf-8")
 
+def test_formula(rules, formula:str):
+    dictionary = {}
+    for rule in rules:
+        dictionary[rule] = 1
+    
+    try:
+        d20.roll(add_values_to_formula_string(dictionary, formula)).total
+    except d20.errors.RollSyntaxError:
+        return "The formula can't be evaluated. Either there is an incorrect variable or the formula itself is incorrect."
+    
+    dictionary = {}
+    for rule in rules:
+        dictionary[rule] = 0
+    
+    try:
+        d20.roll(add_values_to_formula_string(dictionary, formula)).total
+    except d20.errors.RollValueError:
+        return "The formula may return a division by zero error."
+    
+    return True
 
 def map_url_constructor(map, entities=None):
     url = "https://otfbm.io/" + map["length"] + "x" + map["height"] + "/@dc" + map["grid_size"]

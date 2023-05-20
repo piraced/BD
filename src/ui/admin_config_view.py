@@ -56,14 +56,14 @@ class Admin_config_view(discord.ui.View):
         ability_config_button.callback = ability_config_button_callback
         self.add_item(ability_config_button)
 
-        ##########item config button
-        async def item_config_button_callback(interaction: discord.Interaction):
-            view = src.ui.content_config_view.Content_config_view("items", interaction.guild_id)
-            await interaction.response.edit_message(content="list of all items for the current ruleset - " + db.get_selected_ruleset(interaction.guild_id)["name"], view=view)
+        ##########macro config button
+        async def macro_config_button_callback(interaction: discord.Interaction):
+            view = src.ui.content_config_view.Content_config_view("macros", interaction.guild_id)
+            await interaction.response.edit_message(content="list of all macros for the current ruleset - " + db.get_selected_ruleset(interaction.guild_id)["name"], view=view)
 
-        item_config_button = discord.ui.Button(label="Item configuration", style=discord.ButtonStyle.gray)
-        item_config_button.callback = item_config_button_callback
-        self.add_item(item_config_button)
+        macro_config_button = discord.ui.Button(label="Macro configuration", style=discord.ButtonStyle.gray)
+        macro_config_button.callback = macro_config_button_callback
+        self.add_item(macro_config_button)
 
         ##########Creature config button
         async def creature_config_button_callback(interaction: discord.Interaction):

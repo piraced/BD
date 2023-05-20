@@ -1,5 +1,5 @@
 import discord
-import src.ui.item_config_modal
+import src.ui.macro_config_modal
 import src.ui.ability_config_modal
 import src.ui.effect_config_modal
 import src.ui.creature_config_modal
@@ -138,8 +138,8 @@ class Content_config_view(discord.ui.View):
         def modal_selector(self):
             if self.alt_mode == 0:
                 match self.content_type:
-                    case 'items':
-                        modal = src.ui.item_config_modal.Item_config_modal(title= str(self.label) + " item", server_id= self.server_id)
+                    case 'macros':
+                        modal = src.ui.macro_config_modal.Macro_config_modal(title= str(self.label) + " macro", server_id= self.server_id)
                     case 'abilities':
                         modal = src.ui.ability_config_modal.Ability_config_modal(title= str(self.label) + " ability", server_id= self.server_id)
                     case'effects':

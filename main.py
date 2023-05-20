@@ -26,8 +26,5 @@ bot.run(os.getenv('TOKEN'))
 
 
 
-######## there is not testing for the formulas in effect_config_modal.py and ruleset_combat_config_modal.py
-######## Probably broke encounter setup modal by changing how battlemaps are generated in utils
 ######## There is no collision between tokens in battle
-######## no checks what person is pressing the button for what character
 ########

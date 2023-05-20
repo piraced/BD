@@ -12,7 +12,7 @@ class Content_config(discord.ext.commands.Cog):
 
     @discord.slash_command(name = "content_config", description = "Command to call up the ruleset management interface in the current channel")
     @discord.commands.default_permissions(administrator=True)
-    async def content_config(self, ctx: discord.ApplicationContext, content_type: discord.Option(str, choices=['items', 'abilities', 'effects', 'characters', 'creatures'])):
+    async def content_config(self, ctx: discord.ApplicationContext, content_type: discord.Option(str, choices=[ 'abilities', 'effects', 'characters', 'creatures'])):
         if(db.get_selected_ruleset(ctx.guild_id) is None):
             await ctx.respond("Please select a ruleset first", ephemeral=True)
             return

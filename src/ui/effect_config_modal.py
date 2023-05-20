@@ -1,5 +1,6 @@
 import discord
 import src.db_operations as db
+import src.utils
 
 class Effect_config_modal(discord.ui.Modal):
     new = True
@@ -38,6 +39,7 @@ supported: +-*/() dice rolls"""
     async def callback(self, interaction: discord.Interaction):
         needed_stats_rez = self.deserialize_needed_stats(self.children[2].value)
         effect_config_rez = self.convert_effect_config(self.children[3].value)
+        formula_test = self.test_formulas(needed_stats_rez, self.children[4].value)
         effect_formula_rez = self.children[4].value.splitlines()
 
         ####If name field is empty cancel object creation/ delete object being modified
@@ -64,10 +66,8 @@ supported: +-*/() dice rolls"""
         elif isinstance(effect_config_rez, str):
             await interaction.response.send_message(effect_config_rez, ephemeral=True)
         ###########test formula
-        ##########placeholder for now
-        elif False != False:
-            msg = "Efect creation cancelled due to incorrect values or formatting in the effect formula field. Each line must start with the name of the statistic being modified followed by = and then the formula to get the new value. all variables must use the same names as defined in needed statistics."
-            await interaction.response.send_message(msg, ephemeral=True)
+        elif isinstance(formula_test, str):
+            await interaction.response.send_message(formula_test, ephemeral=True)
         else:        
             document = {
                 "server_id" : interaction.guild_id,
@@ -103,6 +103,33 @@ supported: +-*/() dice rolls"""
             if stat["stat_source"] not in ["caster", "target"]:
                 return False
         return True
+    
+    def test_formulas(self, needed_stats, formulas):
+        stats = []
+        for needed_stat in needed_stats:
+            stats.append(needed_stat["name"])
+        for index, formula in enumerate(formulas, start=1):
+            ### Check if format matches the needed format of variable = equation
+            if formula.count("=") != 1:
+                rez_msg = f"Validation failed for formula {index} due to: \nEach formula must contain exactly 1 \"=\""
+                return rez_msg
+            
+            parts = formula.split("=")
+            ### Check if the result is for self
+            formula_rez_stat = next((item for item in stats if item["name"] == parts[0].strip()), False)
+            if formula_rez_stat == False:
+                rez_msg = f"Validation failed for formula {index} due to: \nResult variable not found in needed stats"
+                return rez_msg
+            elif formula_rez_stat["stat_source"] != "target":
+                rez_msg = f"Validation failed for formula {index} due to: \nResult variable source is not \"target\""
+                return rez_msg
+            ### Test formula itself
+            rez = src.utils.test_formula(stats, parts[1].strip())
+            if isinstance(rez, str):
+                rez_msg = f" Validation failed for formula {index} due to:\n" + rez
+                return rez_msg
+        return True
+                
 
     ###turns needed stats from a string to an array of objects, returns an error message string if the input format is wrong
     def deserialize_needed_stats(self, needed_stats:str):
