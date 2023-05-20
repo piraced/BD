@@ -12,7 +12,7 @@ class Rule_config_view(discord.ui.View):
     ruleset_selection_remove_clicked = False
 
     def __init__(self, server_id):
-        super().__init__()
+        super().__init__(timeout=None)
         self.server_id = server_id
         self.add_ui()
 

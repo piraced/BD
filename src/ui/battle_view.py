@@ -11,7 +11,7 @@ class Battle_view(discord.ui.View):
 
 
     def __init__(self, encounter_name, server_id, characters):
-        super().__init__()
+        super().__init__(timeout=None)
         self.server_id = server_id
         self.thread = None
 

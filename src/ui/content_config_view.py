@@ -17,7 +17,7 @@ class Content_config_view(discord.ui.View):
     alt_mode=0
 
     def __init__(self, content_type, server_id, alt_mode=0, assign_user=None):
-        super().__init__()
+        super().__init__(timeout=None)
         self.content_type = content_type
         self.server_id = server_id
         self.alt_mode = alt_mode
