@@ -1,4 +1,5 @@
 import src.classes.effect
+import src.classes.ability
 import src.db_operations as db
 import src.utils
 import d20
@@ -12,7 +13,7 @@ class Creature():
     def __init__(self, creature, length_coord, height_coord, server_id, thread:discord.Thread):
         self.server_id = server_id
         self.name = creature["name"]
-        self.abilities = creature["abilities"]
+        self.abilities = []
         self.thread = thread
         self.statistics = {}
         self.effects = []
@@ -31,6 +32,10 @@ class Creature():
 
         for key, value in creature["statistics"].items():
             self.statistics[key] = {"value" : value, "max" : value}
+
+        for ability in creature["abilities"]:
+            ability_data = db.get_object("abilities", ability, self.server_id)
+            self.abilities.append(src.classes.ability.Ability(ability_data, self.server_id))
 
         for effect in creature["effects"]:
             effect_data = db.get_object("effects", effect, self.server_id)

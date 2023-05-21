@@ -37,9 +37,17 @@ class Battle_view(discord.ui.View):
 
 
     def add_ui(self):
-        ##########top left blank button
-        top_left_blank_button = discord.ui.Button(emoji="⬛", style=discord.ButtonStyle.gray, disabled=True, row=0)
-        self.add_item(top_left_blank_button)
+        ##########character info button
+        async def info_button_callback(interaction: discord.Interaction):
+            if self.battle.get_current_entity().player_id == interaction.user.id or interaction.user.guild_permissions.administrator:
+                msg = await self.character_info(interaction, self.battle.get_current_entity())
+                await interaction.response.send_message(msg, ephemeral=True)
+            else:
+                await interaction.response.send_message("It is currently not your turn", ephemeral=True)
+
+        info_button = discord.ui.Button(emoji="ℹ", style=discord.ButtonStyle.gray, row=0)
+        info_button.callback = info_button_callback
+        self.add_item(info_button)
 
         ##########up button
         async def up_button_callback(interaction: discord.Interaction):
@@ -189,3 +197,50 @@ class Battle_view(discord.ui.View):
 
         
 
+
+
+    async def character_info(self, interaction: discord.Interaction, entity):
+
+        stats = db.get_ruleset(db.get_selected_ruleset(interaction.guild_id)["name"], interaction.guild_id)["statistics"]
+        if entity.player_id != 0:
+            player = await interaction.guild.fetch_member(entity.player_id)
+            player_nick = player.display_name
+        else:
+            player_nick = "DM"
+
+        msg = f"Character information for: {entity.name}({player_nick})\n\nStatistics:\n\n"
+
+        for stat in stats:
+            msg = msg + stat + ": " + str(entity.statistics[stat]["value"]) + "/" + str(entity.statistics[stat]["max"]) + "\n"
+
+        msg = msg + "\nAbilities:\n\n"
+
+        for ability in entity.abilities:
+
+            msg = msg + ability.name + "\n\n" + ability.description + "\n\nability type: " + ability.type + "\nrange: " + str(ability.range[0]) + "\n"
+            if ability.type == "cone":
+                msg = msg + "cone width: " + str(ability.range[1]) + "\n"
+
+            msg = msg + "\nAbility cost:\n"
+            for self_effect_name in ability.self_effects:
+                effect = db.get_object("effects", self_effect_name, interaction.guild_id)
+                msg = msg + effect["name"] + ":\n"
+                for formula in effect["formulas"]:
+                    msg = msg + formula + "\n"
+
+            msg = msg + "\nAbility effects:\n"
+            for effect_name in ability.effects:
+                effect = db.get_object("effects", effect_name, interaction.guild_id)
+                msg = msg + effect["name"] + ":\n"
+                for formula in effect["formulas"]:
+                    msg = msg + formula + "\n"
+            
+        msg = msg + "\nEffects:\n\n"
+
+        for effect in entity.effects:
+            msg = msg + effect.name + "\nRemaining duration: " + str(effect.duration) + "\nUndoes effects on expiry: " + str(effect.undoes_itself) + "\nFormulas:\n"
+
+            for formula in effect.formulas:
+                msg = msg + formula + "\n"
+
+        return msg

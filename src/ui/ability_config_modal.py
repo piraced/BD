@@ -5,15 +5,18 @@ class Ability_config_modal(discord.ui.Modal):
     new = True
     name=""
     description=""
-    type=""
-    range=""
+    type_n_range=""
+    self_effects=""
     effects=""
 
 ### placeholders are quite shortened due to Discord api limit of 100 characters for placeholders
-    type_placeholder = """single, line, cone, aoe_projectile"""
+    type_n_range_placeholder = """single, line, cone, area
+Max range in tiles, 0=self
+cone width (if cone), otherwise nothing"""
 
-    range_placeholder = """Max ability range in tiles, 0=self
-2nd line if type= cone or aoe_projectile enter degrees or radius"""
+    self_effects_placeholder = """Enter the names (1/line) of effects using this ability gives to the caster
+for example:
+mana_down"""
 
     effects_placeholer = """Enter the names (1/line) of effects this ability gives the target
 for example:
@@ -29,15 +32,22 @@ armor_inc"""
 
         self.add_item(discord.ui.InputText(label="Ability name", placeholder="Ability name (leave empty when saving to delete ability)", value=self.name, required= False))
         self.add_item(discord.ui.InputText(label="Ability description", placeholder="Description...", value=self.description, style=discord.InputTextStyle.long))
-        self.add_item(discord.ui.InputText(label="Ability type", placeholder=self.type_placeholder, value=self.type))
-        self.add_item(discord.ui.InputText(label="Ability range", placeholder=self.range_placeholder, value=self.range, style=discord.InputTextStyle.long))
-        self.add_item(discord.ui.InputText(label="Granted effects", placeholder=self.effects_placeholer, value=self.effects, style=discord.InputTextStyle.long))
+        self.add_item(discord.ui.InputText(label="Ability settings", placeholder=self.type_n_range_placeholder, value=self.type_n_range, style=discord.InputTextStyle.long))
+        self.add_item(discord.ui.InputText(label="Caused effects to the caster", placeholder=self.self_effects_placeholder, value=self.self_effects, style=discord.InputTextStyle.long))
+        self.add_item(discord.ui.InputText(label="Granted effects to the target", placeholder=self.effects_placeholer, value=self.effects, style=discord.InputTextStyle.long))
 
 
     async def callback(self, interaction: discord.Interaction):
 
-        range_rez = self.children[3].value.splitlines()
+        self_effect_rez = self.children[3].value.splitlines()
         effects_rez = self.children[4].value.splitlines()
+
+        parts = self.children[2].value.splitlines()
+        ability_type = parts[0].strip().lower()
+        ability_range = []
+        ability_range.append(parts[1])
+        if len(parts) > 2:
+            ability_range.append(parts[2])
 
         ####If name field is empty cancel object creation/ delete object being modified
         if self.children[0].value == "":
@@ -53,12 +63,16 @@ armor_inc"""
             msg = "an Ability with this name already exists for the current ruleset"
             await interaction.response.send_message(msg, ephemeral=True)
         #####If ability type field contains an incorrect value cancel object creation/ modification
-        elif str.lower(self.children[2].value) not in ["single", "line", "cone", "aoe_projectile", "aoe projectile"]:
-            msg = "Ability creation cancelled due to an incorrect value in the type field. Allowed types are: single, line, cone, aoe_projectile"
+        elif ability_type not in ["single", "line", "cone", "area"]:
+            msg = "Ability creation cancelled due to an incorrect value in the settings field. Allowed types are: single, line, cone, area"
             await interaction.response.send_message(msg, ephemeral=True)
         #####If ability range field contain incorrect values cancel object creation/ modification
-        elif not range_rez[0].isdecimal() or (self.children[2].value in ["cone", "aoe_projectile", "aoe projectile"] and (range_rez.count() < 2 or not range_rez[1].isdecimal())):
-            msg = "Ability creation cancelled due to an incorrect value in the range field. The value must be an non negative integer and if the type is cone or aoe_projectile there must be another number in the second line"
+        elif not ability_range[0].isdecimal() or (ability_type in ["cone"] and (ability_range.count() < 2 or not ability_range[1].isdecimal())):
+            msg = "Ability creation cancelled due to an incorrect value in the settings field. The range value must be an non negative integer and if the type is cone there must be another number in the following line"
+            await interaction.response.send_message(msg, ephemeral=True)
+        #### check if the caused effects exist
+        elif not db.does_object_exist_in_ruleset("effects", self_effect_rez, interaction.guild_id):
+            msg = "One or more of the effects in the caused effects field do not exist. Please create the effects first"
             await interaction.response.send_message(msg, ephemeral=True)
         #### check if the effects entered exist
         elif not db.does_object_exist_in_ruleset("effects", effects_rez, interaction.guild_id):
@@ -70,8 +84,9 @@ armor_inc"""
                 "ruleset": db.get_selected_ruleset(interaction.guild_id)["name"],
                 "name" : self.children[0].value,
                 "description" : self.children[1].value,
-                "type" : self.children[2].value,
-                "range" : range_rez,
+                "type" : ability_type,
+                "range" : ability_range,
+                "self_effects" : list(dict.fromkeys(self_effect_rez)),
                 "effects" : list(dict.fromkeys(effects_rez))
             }
             if self.new == True:
@@ -87,6 +102,6 @@ armor_inc"""
         ability = db.get_object("abilities", self.title[:-8], self.server_id)
         self.name = ability['name']
         self.description = ability['description']
-        self.type = ability['type']
-        self.range = '\n'.join(ability['range'])
+        self.type_n_range = ability['type'] + '\n' + '\n'.join(ability['range'])
+        self.self_effects = '\n'.join(ability['self_effects'])
         self.effects = '\n'.join(ability['effects'])

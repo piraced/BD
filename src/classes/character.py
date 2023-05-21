@@ -1,4 +1,5 @@
 import src.classes.creature
+import src.classes.ability
 import src.db_operations as db
 import src.classes.effect
 import discord
@@ -9,7 +10,7 @@ class Character(src.classes.creature.Creature):
     def __init__(self, character, length_coord, height_coord, server_id, thread:discord.Thread):
         self.server_id = server_id
         self.name = character["name"]
-        self.abilities = character["abilities"]
+        self.abilities = []
         self.statistics = character["statistics"]
         self.effects = []
         self.thread = thread
@@ -32,3 +33,7 @@ class Character(src.classes.creature.Creature):
         for effect in character["effects"]:
             effect_data = db.get_object("effects", effect, self.server_id)
             self.effects.append(src.classes.effect.Effect(effect_data, self.server_id, self.statistics))
+
+        for ability in character["abilities"]:
+            ability_data = db.get_object("abilities", ability, self.server_id)
+            self.abilities.append(src.classes.ability.Ability(ability_data, self.server_id))

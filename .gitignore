@@ -11202,3 +11202,6 @@ venv/share/jupyter/kernels/python3/logo-32x32.png
 venv/share/jupyter/kernels/python3/logo-64x64.png
 venv/share/jupyter/kernels/python3/logo-svg.svg
 venv/share/man/man1/ipython.1
+src/classes/__pycache__/ability.cpython-310.pyc
+src/cogs/__pycache__/use_commands.cpython-310.pyc
+src/cogs/__pycache__/use_commands.cpython-310.pyc
