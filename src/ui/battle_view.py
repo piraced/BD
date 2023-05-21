@@ -153,6 +153,9 @@ class Battle_view(discord.ui.View):
 
 
     async def update_view(self, interaction:discord.Interaction):
+
+
+        ### Get player nick / write DM if monster
         if self.battle.get_current_entity().player_id != 0:
             id = self.battle.get_current_entity().player_id
             member = await interaction.guild.fetch_member(id)
@@ -179,6 +182,17 @@ class Battle_view(discord.ui.View):
         if self.battle.get_current_entity().y == self.battle.map_height:
             self.get_item("down_button").disabled = True
 
+        ###Disable buttons if moving would cause a collision
+        coords = await self.get_entity_coords()
+        if [self.battle.get_current_entity().x - 1, self.battle.get_current_entity().y] in coords:
+            self.get_item("left_button").disabled = True
+        if [self.battle.get_current_entity().x + 1, self.battle.get_current_entity().y] in coords:
+            self.get_item("right_button").disabled = True
+        if [self.battle.get_current_entity().x, self.battle.get_current_entity().y - 1] in coords:
+            self.get_item("up_button").disabled = True
+        if [self.battle.get_current_entity().x, self.battle.get_current_entity().y + 1] in coords:
+            self.get_item("down_button").disabled = True
+
         #####Disable buttons if out of movement points
         if self.battle.get_current_entity().speed == 0:
             self.get_item("up_button").disabled = True
@@ -197,7 +211,12 @@ class Battle_view(discord.ui.View):
 
         
 
-
+    async def get_entity_coords(self):
+        coords = []
+        for entity in self.battle.entities:
+            if [entity.x, entity.y] != [self.battle.get_current_entity().x, self.battle.get_current_entity().y]:
+                coords.append([entity.x, entity.y])
+        return coords
 
     async def character_info(self, interaction: discord.Interaction, entity):
 
