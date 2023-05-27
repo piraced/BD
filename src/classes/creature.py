@@ -25,6 +25,7 @@ class Creature():
         self.log_msg = ""
         self.effect_logs = []
         self.player_id = 0
+        self.defeated = False
 
         rules = db.get_ruleset(db.get_selected_ruleset(self.server_id)["name"],self.server_id)
         self.speed_formula = rules["movement_formula"]
@@ -35,7 +36,7 @@ class Creature():
 
         for ability in creature["abilities"]:
             ability_data = db.get_object("abilities", ability, self.server_id)
-            self.abilities.append(src.classes.ability.Ability(ability_data, self.server_id))
+            self.abilities.append(src.classes.ability.Ability(ability_data, self.server_id, self.player_id))
 
         for effect in creature["effects"]:
             effect_data = db.get_object("effects", effect, self.server_id)
@@ -50,12 +51,19 @@ class Creature():
         for effect in self.effects:
             self.statistics = effect.apply_effect(self.statistics)
             self.effect_logs.append(effect.log_msg)
+            if effect.delete:
+                self.effects.remove(effect)
 
         rez = self.calculate_speed()
-        self.log_msg = f"Starting turn for :{self.name}\nMovement points this turn: {rez}"
+        self.log_msg = f"Starting turn for: {self.name}\nMovement points this turn: {rez}"
         await thread.send(self.log_msg)
+
+        ### for some reason this is where it stops before error
         for effect_log in self.effect_logs:
-            await thread.send(effect_log)
+            if effect_log != "":
+                await thread.send(effect_log)
+        
+        self.is_defeated()
 
 
     def calculate_speed(self):
@@ -74,4 +82,17 @@ class Creature():
         for key, value in self.statistics.items():
             rez[key] = value["value"]
         return rez
+    
+    async def lower_over_max_stats(self):
+        for key, value in self.statistics.items():
+            if value["max"] < value["value"]:
+                self.statistics[key]["value"] = value["max"]
+
+    
+    def is_defeated(self):
+        defeat_stats = db.get_ruleset(db.get_selected_ruleset(self.server_id)["name"], self.server_id)["defeat_statistics"]
+
+        for defeat_stat in defeat_stats:
+            if int(self.statistics[defeat_stat]["value"]) <= 0:
+                self.defeated = True
     

@@ -50,7 +50,7 @@ class Content_config_view(discord.ui.View):
 
         ##########Previous page button
         async def back_page_button_callback(interaction: discord.Interaction):
-            page = page - 1
+            self.page = self.page - 1
             self.update_view(interaction.guild_id)
             await interaction.response.edit_message(view=self)
             
@@ -65,7 +65,7 @@ class Content_config_view(discord.ui.View):
 
         ###########Next page button
         async def forward_page_button_callback(interaction: discord.Interaction):
-            page = page + 1
+            self.page = self.page + 1
             self.update_view(interaction.guild_id)
             await interaction.response.edit_message(view=self)
 
@@ -96,7 +96,7 @@ class Content_config_view(discord.ui.View):
             self.get_item("back_page_button").disabled = False
         self.get_item("page_num_button").label = self.page
 
-        if max_index >= len(self.labels):
+        if max_index > len(self.labels):
             self.labels.append("New")
             appended = True
             labels_to_use = self.labels[min_index:]

@@ -25,6 +25,3 @@ for cog in cogs_list:
 bot.run(os.getenv('TOKEN'))
 
 
-
-######## There is no collision between tokens in battle
-########

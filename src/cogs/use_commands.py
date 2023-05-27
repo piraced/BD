@@ -2,6 +2,7 @@ import discord
 import src.db_operations as db
 import src.ui.battle_view
 import src.ui.content_config_view
+import src.ui.encounter_start_modal
 
 
 class Use_commands(discord.ext.commands.Cog):
@@ -18,10 +19,8 @@ class Use_commands(discord.ext.commands.Cog):
         elif(db.get_ruleset(db.get_selected_ruleset(ctx.guild_id)["name"], ctx.guild_id)["initiative_formula"] == ""):
             await ctx.respond("Please setup the ruleset combat configuration first", ephemeral=True)
         else:
-
-            characters = [{"name" : "test", "length_coord" : 3, "height_coord" : 3}, {"name" : "warrior", "length_coord" : 3, "height_coord" : 5}]
-            view = src.ui.battle_view.Battle_view(encounter_name=encounter, server_id=ctx.guild_id, characters=characters)
-            await ctx.respond("Start the encounter", view=view)
+            modal = src.ui.encounter_start_modal.Encounter_start_modal(ctx.guild_id, encounter, title="Participating characters")
+            await ctx.send_modal(modal)
 
 
     @discord.slash_command(name = "macros", description = "Bring up the macro selection")

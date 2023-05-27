@@ -62,6 +62,10 @@ armor_inc"""
         elif db.does_object_exist_in_ruleset("creatures", self.children[0].value, interaction.guild_id) and (self.new == True or self.children[0].value != self.name):
             msg = "a creature with this name already exists for the current ruleset"
             await interaction.response.send_message(msg, ephemeral=True)
+        ####Check if name contains spaces
+        elif " " in self.children[0].value:
+            msg = "A creatures name cannot contain spaces"
+            await interaction.response.send_message(msg, ephemeral=True)
         ####print error message if one was returned when converting creature stats to dict
         elif isinstance(stats_rez, str):
             await interaction.response.send_message(stats_rez, ephemeral=True)

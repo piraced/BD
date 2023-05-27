@@ -59,7 +59,11 @@ poisoned"""
                 await interaction.response.send_message(msg, ephemeral=True)
         ####Check if a character with that name already exists
         elif db.does_object_exist_in_ruleset("characters", self.children[0].value, interaction.guild_id) and (self.new == True or self.children[0].value != self.name):
-            msg = "a character with this name already exists for the current ruleset"
+            msg = "A character with this name already exists for the current ruleset"
+            await interaction.response.send_message(msg, ephemeral=True)
+        ####Check if name contains spaces
+        elif " " in self.children[0].value:
+            msg = "A characters name cannot contain spaces"
             await interaction.response.send_message(msg, ephemeral=True)
         ####send error message if one was returned when converting character stats to dict
         elif isinstance(stats_rez, str):

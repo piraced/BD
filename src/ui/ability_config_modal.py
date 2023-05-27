@@ -10,9 +10,8 @@ class Ability_config_modal(discord.ui.Modal):
     effects=""
 
 ### placeholders are quite shortened due to Discord api limit of 100 characters for placeholders
-    type_n_range_placeholder = """single, line, cone, area
-Max range in tiles, 0=self
-cone width (if cone), otherwise nothing"""
+    type_n_range_placeholder = """single, line, area
+Max range in tiles, 0=self"""
 
     self_effects_placeholder = """Enter the names (1/line) of effects using this ability gives to the caster
 for example:
@@ -44,10 +43,7 @@ armor_inc"""
 
         parts = self.children[2].value.splitlines()
         ability_type = parts[0].strip().lower()
-        ability_range = []
-        ability_range.append(parts[1])
-        if len(parts) > 2:
-            ability_range.append(parts[2])
+        ability_range = parts[1].strip()
 
         ####If name field is empty cancel object creation/ delete object being modified
         if self.children[0].value == "":
@@ -63,12 +59,12 @@ armor_inc"""
             msg = "an Ability with this name already exists for the current ruleset"
             await interaction.response.send_message(msg, ephemeral=True)
         #####If ability type field contains an incorrect value cancel object creation/ modification
-        elif ability_type not in ["single", "line", "cone", "area"]:
-            msg = "Ability creation cancelled due to an incorrect value in the settings field. Allowed types are: single, line, cone, area"
+        elif ability_type not in ["single", "line", "area"]:
+            msg = "Ability creation cancelled due to an incorrect value in the settings field. Allowed types are: single, line, area"
             await interaction.response.send_message(msg, ephemeral=True)
         #####If ability range field contain incorrect values cancel object creation/ modification
-        elif not ability_range[0].isdecimal() or (ability_type in ["cone"] and (ability_range.count() < 2 or not ability_range[1].isdecimal())):
-            msg = "Ability creation cancelled due to an incorrect value in the settings field. The range value must be an non negative integer and if the type is cone there must be another number in the following line"
+        elif not ability_range.isdecimal():
+            msg = "Ability creation cancelled due to an incorrect value in the settings field. The range value must be an non negative integer"
             await interaction.response.send_message(msg, ephemeral=True)
         #### check if the caused effects exist
         elif not db.does_object_exist_in_ruleset("effects", self_effect_rez, interaction.guild_id):
@@ -102,6 +98,6 @@ armor_inc"""
         ability = db.get_object("abilities", self.title[:-8], self.server_id)
         self.name = ability['name']
         self.description = ability['description']
-        self.type_n_range = ability['type'] + '\n' + '\n'.join(ability['range'])
+        self.type_n_range = ability['type'] + '\n' + ability['range']
         self.self_effects = '\n'.join(ability['self_effects'])
         self.effects = '\n'.join(ability['effects'])

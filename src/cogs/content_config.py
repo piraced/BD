@@ -14,7 +14,7 @@ class Content_config(discord.ext.commands.Cog):
     async def admin_config(self, ctx: discord.ApplicationContext):
         view = src.ui.admin_config_view.Admin_config_view(ctx.guild_id)
 
-        await ctx.respond("Admin configuration panel", view=view, ephemeral=True)
+        await ctx.respond("Configuration panel", view=view, ephemeral=True)
 
     @discord.user_command(name="Assign character")
     async def assign_character(self, ctx: discord.ApplicationContext, member: discord.Member):

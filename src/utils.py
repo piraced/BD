@@ -68,7 +68,7 @@ def test_formula(rules, formula:str):
     
     return True
 
-def map_url_constructor(map, entities=None):
+def map_url_constructor(map, entities=None, ability=None, ability_coords=None):
     url = "https://otfbm.io/" + map["length"] + "x" + map["height"] + "/@dc" + map["grid_size"]
 
     for entity in entities:
@@ -81,5 +81,20 @@ def map_url_constructor(map, entities=None):
         if entity.token != "":
             url = url + "~" + entity.token
     
+
+    if ability != None:
+        match ability.type:
+            case "single":
+                url = url + "/*c2b" + get_column_letter(ability.x) + str(ability.y)
+            case "line":
+                url = url + "/*l" + str(int(ability.range) * 5) + ",1" + get_column_letter(ability_coords[0]) + str(ability_coords[1]) + get_column_letter(ability.x) + str(ability.y)
+                url = url + "/*c2b" + get_column_letter(ability.x) + str(ability.y)
+            case "area":
+                url = url + "/*c" + str(int(ability.range) * 5) + "b" + get_column_letter(ability_coords[0]) + str(ability_coords[1])
+            case "cone":
+                url = url + "/t" + str(int(ability.range) * 5) + "b" + get_column_letter(ability_coords[0]) + str(ability_coords[1]) + get_column_letter(ability.x) + str(ability.y)
+                url = url + "/*c2b" + get_column_letter(ability.x) + str(ability.y)
+
+
     url = url+ "/?bg=" + map["image"]
     return url

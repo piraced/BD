@@ -96,9 +96,9 @@ def does_object_exist_in_ruleset(object_type, names_in, server_id):
         names = names_in
     for name in names:
         rez = objects.find_one({"name": name, "ruleset" : get_selected_ruleset(server_id)["name"], "server_id" : server_id})
-        if rez is not None:
-            return True
-    return False
+        if rez is None:
+            return False
+    return True
     
 def does_stat_exist_in_ruleset(stat_name:str, server_id):
     ruleset = get_ruleset(get_selected_ruleset(server_id)["name"], server_id)

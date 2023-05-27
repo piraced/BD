@@ -29,7 +29,7 @@ supported: +-*/() dice rolls"""
             self.get_effect_values()
             self.new = False
 
-        self.add_item(discord.ui.InputText(label="Effect name", placeholder="Effect name (leave empty when saving to delete ability)", value=self.name, required= False))
+        self.add_item(discord.ui.InputText(label="Effect name", placeholder="Effect name (leave empty when saving to delete effect)", value=self.name, required= False))
         self.add_item(discord.ui.InputText(label="Effect description", placeholder="Description...", value=self.description, style=discord.InputTextStyle.long))
         self.add_item(discord.ui.InputText(label="Needed statistics", placeholder=self.needed_stats_placeholder, value=self.needed_stats, style=discord.InputTextStyle.long))
         self.add_item(discord.ui.InputText(label="Effect configuration", placeholder=self.effect_config_placeholder, value=self.effect_config, style=discord.InputTextStyle.long))
@@ -106,8 +106,13 @@ supported: +-*/() dice rolls"""
     
     def test_formulas(self, needed_stats, formulas):
         stats = []
+
+        ### if theres only 1 formula turn it into list
+        if isinstance(formulas, str):
+            formulas = [formulas]
+
         for needed_stat in needed_stats:
-            stats.append(needed_stat["name"])
+            stats.append(needed_stat)
         for index, formula in enumerate(formulas, start=1):
             ### Check if format matches the needed format of variable = equation
             if formula.count("=") != 1:
@@ -124,7 +129,11 @@ supported: +-*/() dice rolls"""
                 rez_msg = f"Validation failed for formula {index} due to: \nResult variable source is not \"target\""
                 return rez_msg
             ### Test formula itself
-            rez = src.utils.test_formula(stats, parts[1].strip())
+            test_stats = []
+            for stat in stats:
+                test_stats.append(stat["name"])
+
+            rez = src.utils.test_formula(test_stats, parts[1].strip())
             if isinstance(rez, str):
                 rez_msg = f" Validation failed for formula {index} due to:\n" + rez
                 return rez_msg

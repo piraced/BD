@@ -36,6 +36,10 @@ class Creature_assign_img_modal(discord.ui.Modal):
         elif db.does_object_exist_in_ruleset("creatures", self.children[0].value, interaction.guild_id) and  self.children[0].value != self.name:
             msg = "a creature with this name already exists for the current ruleset"
             await interaction.response.send_message(msg, ephemeral=True)
+        ####Check if name contains spaces
+        elif " " in self.children[0].value:
+            msg = "A creatures name cannot contain spaces"
+            await interaction.response.send_message(msg, ephemeral=True)
         ####Check if the token generated
         elif isinstance(token, bool):
             msg = "Failed to generate image token. Perhaps the url is incorrect or the image is bigger than 160x160px"

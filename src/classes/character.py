@@ -21,6 +21,7 @@ class Character(src.classes.creature.Creature):
         self.initiative = 0
         self.log_msg = ""
         self.player_id = character["player"]
+        self.defeated = False
 
         rules = db.get_ruleset(db.get_selected_ruleset(self.server_id)["name"],self.server_id)
         self.speed_formula = rules["movement_formula"]
@@ -36,4 +37,4 @@ class Character(src.classes.creature.Creature):
 
         for ability in character["abilities"]:
             ability_data = db.get_object("abilities", ability, self.server_id)
-            self.abilities.append(src.classes.ability.Ability(ability_data, self.server_id))
+            self.abilities.append(src.classes.ability.Ability(ability_data, self.server_id, self.player_id))
