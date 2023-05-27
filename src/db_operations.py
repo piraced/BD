@@ -30,6 +30,8 @@ def initialize_database():
         get_database().create_collection(name='creatures')
     if 'maps' not in names:
         get_database().create_collection(name='maps')
+    if 'macros' not in names:
+        get_database().create_collection(name='macros')
     
 
 def get_rulesets(server_id):
